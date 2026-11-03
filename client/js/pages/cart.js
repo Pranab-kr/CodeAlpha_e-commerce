@@ -129,6 +129,7 @@ function cartLine(item, cart) {
           name: item.name,
           slug: item.slug,
           stock: item.stock,
+          imageUrl: item.imageUrl,
           category: item.category,
         },
         { size: 'card' },
