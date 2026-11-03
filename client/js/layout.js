@@ -1,5 +1,6 @@
 import { getCurrentUser, markSessionReady, refreshSession } from './auth.js';
 import { loadCart } from './cart.js';
+import { currencyCodes, getCurrency, setCurrency } from './currency.js';
 import { el } from './ui.js';
 
 function currentPath() {
@@ -24,6 +25,21 @@ function cartBadge() {
     text: '0',
     attrs: { 'data-cart-badge': '', hidden: true, 'aria-hidden': 'true' },
   });
+}
+
+function currencySelect(id) {
+  const select = el('select', {
+    className: 'currency-select',
+    attrs: { id, 'data-currency-select': '', 'aria-label': 'Currency' },
+  });
+
+  for (const code of currencyCodes()) {
+    select.append(el('option', { text: code, attrs: { value: code } }));
+  }
+
+  select.value = getCurrency();
+  select.addEventListener('change', () => setCurrency(select.value));
+  return select;
 }
 
 const navItems = [
@@ -146,13 +162,21 @@ function renderHeader(host) {
     },
   });
 
+  const menuContent = navLinks();
+  menuContent.push(
+    el('div', { className: 'menu-currency' }, [
+      el('label', { text: 'Currency', attrs: { for: 'currency-menu' } }),
+      currencySelect('currency-menu'),
+    ]),
+  );
+
   const menu = el(
     'nav',
     {
       className: 'site-menu',
       attrs: { id: 'site-menu', 'aria-label': 'Mobile menu', hidden: true },
     },
-    [el('div', { className: 'container site-menu-inner' }, navLinks())],
+    [el('div', { className: 'container site-menu-inner' }, menuContent)],
   );
 
   const header = el('header', { className: 'site-header' }, [
@@ -160,6 +184,7 @@ function renderHeader(host) {
       wordmark(),
       el('div', { className: 'header-right' }, [
         el('nav', { className: 'header-nav', attrs: { 'aria-label': 'Main' } }, navLinks()),
+        el('div', { className: 'header-currency' }, [currencySelect('currency-header')]),
         toggle,
       ]),
       el('span', {
@@ -185,12 +210,13 @@ function renderFooter(host) {
         el('a', { text: 'Catalog', attrs: { href: '/products.html' } }),
         el('a', { text: 'Cart', attrs: { href: '/cart.html' } }),
         el('a', { text: 'Delivery and returns', attrs: { href: '/index.html#delivery' } }),
+        el('a', { text: 'Photo credits', attrs: { href: '/credits.html' } }),
       ]),
       el('div', { className: 'footer-meta' }, [
-        el('p', { text: 'Demo store. No real payments.' }),
+        el('p', { text: 'Demo store. No real payments. Currency conversions are approximate.' }),
         el('p', { text: 'Express, Postgres, Drizzle, and plain HTML.' }),
         el('p', {
-          text: 'Product images are replaceable slots; Cobalt plates stand in for photographs.',
+          text: 'Product photos are local demo assets with sources listed in the credits.',
         }),
       ]),
     ]),
@@ -233,6 +259,12 @@ export function initLayout() {
     loadCart({ force: true })
       .then((cart) => updateCartBadge(cart.itemCount))
       .catch(() => {});
+  });
+
+  window.addEventListener('currency:changed', () => {
+    document.querySelectorAll('[data-currency-select]').forEach((select) => {
+      select.value = getCurrency();
+    });
   });
 
   refreshSession({ announce: false })

@@ -265,3 +265,4 @@ initLayout();
 syncControls();
 loadCategories();
 loadProducts();
+window.addEventListener('currency:changed', loadProducts);

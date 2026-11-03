@@ -1,6 +1,7 @@
 import { ApiError, apiGet } from '../api.js';
 import { requireAuth } from '../auth.js';
-import { formatDate, formatMoney } from '../format.js';
+import { formatPrice } from '../currency.js';
+import { formatDate } from '../format.js';
 import { initLayout } from '../layout.js';
 import { clear, el, renderErrorState } from '../ui.js';
 
@@ -103,12 +104,12 @@ function renderItems(order) {
         ]),
         el('td', {
           className: 'price-cell',
-          text: formatMoney(item.unitPriceCents, order.currency),
+          text: formatPrice(item.unitPriceCents, order.currency),
         }),
         el('td', { className: 'price-cell', text: String(item.quantity) }),
         el('td', {
           className: 'price-cell',
-          text: formatMoney(item.lineTotalCents, order.currency),
+          text: formatPrice(item.lineTotalCents, order.currency),
         }),
       ]),
     );
@@ -127,15 +128,15 @@ function renderReceipt(order) {
   document.querySelector('[data-order-status]').textContent = order.status;
   document.querySelector('[data-order-payment]').textContent = order.paymentStatus;
   document.querySelector('[data-order-number]').textContent = order.orderNumber;
-  document.querySelector('[data-order-subtotal]').textContent = formatMoney(
+  document.querySelector('[data-order-subtotal]').textContent = formatPrice(
     order.subtotalCents,
     order.currency,
   );
-  document.querySelector('[data-order-shipping]').textContent = formatMoney(
+  document.querySelector('[data-order-shipping]').textContent = formatPrice(
     order.shippingCents,
     order.currency,
   );
-  document.querySelector('[data-order-total]').textContent = formatMoney(
+  document.querySelector('[data-order-total]').textContent = formatPrice(
     order.totalCents,
     order.currency,
   );
@@ -163,6 +164,10 @@ async function load() {
     else showError(error);
   }
 }
+
+window.addEventListener('currency:changed', () => {
+  if (!receipt.hidden) load();
+});
 
 async function main() {
   initLayout();

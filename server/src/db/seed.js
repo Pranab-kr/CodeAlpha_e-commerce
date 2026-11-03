@@ -39,7 +39,7 @@ export async function seed() {
         priceCents: product.priceCents,
         stock: product.stock,
         featured: product.featured,
-        imageUrl: null,
+        imageUrl: `/assets/products/${product.slug}.jpg`,
       };
 
       await tx

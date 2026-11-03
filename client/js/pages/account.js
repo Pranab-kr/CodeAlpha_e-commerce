@@ -1,6 +1,7 @@
 import { apiGet } from '../api.js';
 import { requireAuth, signOut } from '../auth.js';
-import { formatDate, formatMoney } from '../format.js';
+import { formatPrice } from '../currency.js';
+import { formatDate } from '../format.js';
 import { initLayout } from '../layout.js';
 import { clear, el, renderEmptyState, renderErrorState, renderSkeletonRows } from '../ui.js';
 
@@ -24,7 +25,7 @@ function renderOrderTable(orders) {
         el('th', { text: 'Order', attrs: { scope: 'col' } }),
         el('th', { text: 'Date', attrs: { scope: 'col' } }),
         el('th', { text: 'Status', attrs: { scope: 'col' } }),
-        el('th', { text: 'Total', attrs: { scope: 'col' } }),
+        el('th', { text: 'Total', attrs: { scope: 'col', class: 'num' } }),
         el('th', { text: '', attrs: { scope: 'col' } }),
       ]),
     ]),
@@ -39,7 +40,7 @@ function renderOrderTable(orders) {
         el('td', { text: order.status }),
         el('td', {
           className: 'price-cell',
-          text: formatMoney(order.totalCents, order.currency),
+          text: formatPrice(order.totalCents, order.currency),
         }),
         el('td', {}, [
           el('a', {
@@ -89,6 +90,7 @@ function renderAccount(user) {
   nameHost.textContent = user.name;
   emailHost.textContent = user.email;
   line.textContent = 'Your cart and orders follow this account.';
+  window.addEventListener('currency:changed', loadOrders);
   loadOrders();
 }
 

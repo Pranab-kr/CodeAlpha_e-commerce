@@ -2,16 +2,17 @@
 
 A learning-focused e-commerce store. The backend is the main subject: Express 5, Postgres 17, Drizzle ORM, JWT auth, migrations, seed data, and focused integration tests. The frontend is plain HTML, CSS, and JavaScript served by Express, with no framework and no build step.
 
-> **Demo store.** No real payments are processed. Product images are replaceable slots. Do not use this project as-is for production commerce.
+> **Demo store.** No real payments are processed. Product photos are local, credited demo assets. Do not use this project as-is for production commerce.
 
 ## What it does
 
 - Product catalog with search, category filter, sorting, and pagination
-- Product detail pages with specs, stock state, and quantity selection
+- Product detail pages with specs, stock state, quantity selection, and local photography
 - Server-side cart for guests and signed-in users, merged on login
 - Registration and login with JWT access tokens and an httpOnly refresh cookie
 - Checkout with a real database transaction, stock locking, price snapshots, and idempotency
 - Order history and order detail pages
+- INR-first display pricing with an INR/USD/EUR selector using fixed demo conversion rates
 - Responsive, accessible UI built on the Hallmark Cobalt system
 
 ## Stack
@@ -40,7 +41,7 @@ npm run dev
 
 Open <http://localhost:3000>.
 
-The seed creates four categories and twelve desk/tech products, including one out-of-stock item and one low-stock item.
+The seed creates four categories and twelve desk/tech products, including one out-of-stock item and one low-stock item. Prices are stored as USD cents; the storefront displays INR by default and converts to USD or EUR from the currency selector.
 
 ## Scripts
 
@@ -98,6 +99,10 @@ server/tests/           Focused integration tests
 docs/                   Local-only design and phase docs (gitignored)
 ```
 
+## Product photography
+
+Product photos live in `client/assets/products/` and are credited in the storefront at `/credits.html`. They are representative stock images for a fictional catalog, not photos of the named products. Sources, creators, and licenses are listed on that page. If a product has no `image_url` or the file fails to load, the Cobalt product plate renders instead.
+
 ## Testing
 
 ```bash
@@ -131,6 +136,7 @@ Set `NODE_ENV=production`, `APP_ORIGIN`, `DATABASE_URL`, `JWT_SECRET`, and the s
 
 - No real payment gateway; `payment.service.js` is the replacement seam.
 - No admin panel; products and categories are seeded.
-- No product image upload; `products.image_url` is the replacement seam.
-- No email delivery, password reset, reviews, ratings, coupons, or multi-currency.
+- No product image upload; product photos are local, credited assets and `products.image_url` remains the replacement seam.
+- No server-side multi-currency. Display currency is a client preference with fixed demo rates; orders and the API store USD amounts.
+- No email delivery, password reset, reviews, ratings, or coupons.
 - The Hallmark render tier needs Chromium; the current environment runs static gates only.

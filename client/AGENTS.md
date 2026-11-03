@@ -11,15 +11,16 @@ Plain HTML pages, CSS, and ES modules. No framework, no template engine, no buil
 ```text
 client/
 ├─ index.html, products.html, product.html, cart.html, checkout.html,
-│  login.html, register.html, account.html, order.html, 404.html
+│  login.html, register.html, account.html, order.html, credits.html, 404.html
 ├─ css/tokens.css      Hallmark Cobalt tokens + shared scale (do not edit casually)
 ├─ css/base.css        Reset, typography, focus, reduced motion
 ├─ css/app.css         Components and page layouts
 ├─ js/api.js           The only place that calls fetch
 ├─ js/auth.js          Access token in memory, refresh flow, auth events
 ├─ js/cart.js          Cart fetch/mutations and cart-count events
-├─ js/layout.js        Header, footer, mobile menu, auth/cart hydration
-├─ js/format.js        Money, dates, safe text helpers
+├─ js/currency.js      Display currency, fixed demo rates, price formatting
+├─ js/layout.js        Header, footer, mobile menu, auth/cart/currency hydration
+├─ js/format.js        Dates, stock text, next-path sanitization
 ├─ js/ui.js            Toasts, skeletons, empty/error states, product card
 ├─ js/pages/*.js       One module per page
 └─ assets/             Self-hosted fonts and local product images
@@ -38,7 +39,8 @@ client/
 - No `transition: all`; animate only `transform` and `opacity`.
 - Respect `prefers-reduced-motion`. The hero field becomes a still.
 - Labels are sentence case, untracked. No eyebrow labels, tracked caps, middle-dot meta strings, arrows glued to link text, or decorative status dots.
-- Product images are slots. If `image_url` is null, render the Cobalt product plate. Do not invent a product image.
+- Product images are local files in `assets/products/` and are credited on `credits.html`. If `image_url` is null or the file fails, render the Cobalt product plate.
+- All storefront prices use `formatPrice` from `js/currency.js`. The API stores USD cents; INR is the default display currency and the user can switch to USD or EUR with fixed demo rates.
 - No external image or font URLs. Self-host assets locally.
 - No fake reviews, ratings, testimonials, customer counts, or brand logos.
 - No admin UI.

@@ -78,7 +78,7 @@ test('POST /api/cart/items adds a line with server totals', async () => {
   assert.equal(item.unitPriceCents, 12900);
   assert.equal(item.quantity, 2);
   assert.equal(item.lineTotalCents, 25800);
-  assert.equal(item.imageUrl, null);
+  assert.equal(item.imageUrl, '/assets/products/arc-75-keyboard.jpg');
 });
 
 test('adding the same product twice sums the quantity and caps at stock', async () => {

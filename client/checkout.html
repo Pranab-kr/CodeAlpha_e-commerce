@@ -167,7 +167,10 @@
           </form>
         </div>
 
-        <aside class="checkout-summary cut" aria-labelledby="checkout-summary-title">
+        <aside
+          class="checkout-summary-column checkout-summary cut"
+          aria-labelledby="checkout-summary-title"
+        >
           <h2 class="checkout-panel-title" id="checkout-summary-title">Summary</h2>
           <div class="checkout-items" data-checkout-items></div>
           <div class="summary-rows">
@@ -184,8 +187,8 @@
               <span data-summary-total>$0.00</span>
             </div>
           </div>
-          <p class="summary-note">
-            Free shipping at $100.00. Prices and totals come from the server.
+          <p class="summary-note" data-free-shipping-note>
+            Free shipping on larger orders. Prices and totals come from the server.
           </p>
         </aside>
       </div>

@@ -1,6 +1,6 @@
 import { ApiError, apiGet } from '../api.js';
 import { addFromButton } from '../cart.js';
-import { formatMoney } from '../format.js';
+import { formatPrice } from '../currency.js';
 import { initLayout } from '../layout.js';
 import { clear, el, productCard, productPlate, renderErrorState, stockLine } from '../ui.js';
 
@@ -133,7 +133,7 @@ function renderProduct(product) {
     el('h1', { text: product.name }),
     el('span', {
       className: 'product-price',
-      text: formatMoney(product.priceCents, product.currency),
+      text: formatPrice(product.priceCents, product.currency),
     }),
     el('p', { className: 'product-description', text: product.description }),
     stockLine(product.stock),
@@ -219,3 +219,4 @@ async function loadProduct() {
 
 initLayout();
 loadProduct();
+window.addEventListener('currency:changed', loadProduct);

@@ -1,7 +1,8 @@
 import { ApiError, apiFetch } from '../api.js';
 import { requireAuth } from '../auth.js';
-import { loadCart } from '../cart.js';
-import { formatMoney, itemCountText } from '../format.js';
+import { getCachedCart, loadCart } from '../cart.js';
+import { formatPrice } from '../currency.js';
+import { itemCountText } from '../format.js';
 import { initLayout } from '../layout.js';
 import {
   clear,
@@ -72,29 +73,34 @@ function renderSummary(cart) {
           el('p', { className: 'checkout-item-name', text: item.name }),
           el('p', {
             className: 'checkout-item-meta',
-            text: `${item.quantity} × ${formatMoney(item.unitPriceCents, cart.currency)}`,
+            text: `${item.quantity} × ${formatPrice(item.unitPriceCents, cart.currency)}`,
           }),
         ]),
         el('span', {
           className: 'checkout-item-total',
-          text: formatMoney(item.lineTotalCents, cart.currency),
+          text: formatPrice(item.lineTotalCents, cart.currency),
         }),
       ]),
     );
   }
 
-  document.querySelector('[data-summary-subtotal]').textContent = formatMoney(
+  document.querySelector('[data-summary-subtotal]').textContent = formatPrice(
     cart.subtotalCents,
     cart.currency,
   );
-  document.querySelector('[data-summary-shipping]').textContent = formatMoney(
+  document.querySelector('[data-summary-shipping]').textContent = formatPrice(
     cart.shippingCents,
     cart.currency,
   );
-  document.querySelector('[data-summary-total]').textContent = formatMoney(
+  document.querySelector('[data-summary-total]').textContent = formatPrice(
     cart.totalCents,
     cart.currency,
   );
+
+  const note = document.querySelector('[data-free-shipping-note]');
+  if (note) {
+    note.textContent = `Free shipping at ${formatPrice(10000, 'USD')}. Prices and totals come from the server.`;
+  }
 }
 
 function prefill(user) {
@@ -224,5 +230,10 @@ async function main() {
   prefill(user);
   await load();
 }
+
+window.addEventListener('currency:changed', () => {
+  const cart = getCachedCart();
+  if (cart && !content.hidden) renderSummary(cart);
+});
 
 main();

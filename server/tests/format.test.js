@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { formatPrice, setCurrency } from '../../client/js/currency.js';
 import { formatDate, formatMoney, sanitizeNext, stockText } from '../../client/js/format.js';
 
 test('formatMoney renders integer cents as USD', () => {
@@ -16,6 +17,18 @@ test('stockText describes stock states honestly', () => {
   assert.equal(stockText(0), 'Out of stock');
   assert.equal(stockText(12), 'Only 12 left');
   assert.equal(stockText(24), 'In stock');
+});
+
+test('formatPrice defaults to INR and converts the server USD amount', () => {
+  assert.equal(formatPrice(12900, 'USD'), '₹10,707');
+});
+
+test('formatPrice follows the selected currency', () => {
+  setCurrency('USD');
+  assert.equal(formatPrice(12900, 'USD'), '$129.00');
+  setCurrency('EUR');
+  assert.equal(formatPrice(12900, 'USD'), '118,68\xa0€');
+  setCurrency('INR');
 });
 
 test('sanitizeNext keeps same-origin paths and rejects external targets', () => {

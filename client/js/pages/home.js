@@ -1,6 +1,7 @@
 import { apiGet } from '../api.js';
 import { addFromButton, getCachedCart, loadCart } from '../cart.js';
-import { formatMoney, itemCountText } from '../format.js';
+import { formatPrice } from '../currency.js';
+import { itemCountText } from '../format.js';
 import { initLayout } from '../layout.js';
 import {
   clear,
@@ -198,7 +199,7 @@ function ledgerLine(item, currency) {
     el('span', { className: 'ledger-line-qty', text: `x${item.quantity}` }),
     el('span', {
       className: 'ledger-line-total',
-      text: formatMoney(item.lineTotalCents, currency),
+      text: formatPrice(item.lineTotalCents, currency),
     }),
   ]);
 }
@@ -235,7 +236,7 @@ function renderLedger(cart) {
   body.append(
     el('div', { className: 'ledger-total' }, [
       el('span', { text: 'Subtotal' }),
-      el('span', { className: 'price', text: formatMoney(cart.subtotalCents, cart.currency) }),
+      el('span', { className: 'price', text: formatPrice(cart.subtotalCents, cart.currency) }),
     ]),
     el('div', { className: 'ledger-actions' }, [
       el('a', { className: 'key key--small', text: 'View cart', attrs: { href: 'cart.html' } }),
@@ -332,7 +333,14 @@ renderMaterialsPlate({
   name: 'Arc 75 Keyboard',
   slug: 'arc-75-keyboard',
   stock: 18,
+  imageUrl: '/assets/products/arc-75-keyboard.jpg',
   category: { name: 'Keyboards' },
 });
 initLedger();
 loadHome();
+
+window.addEventListener('currency:changed', () => {
+  const cached = getCachedCart();
+  if (cached) renderLedger(cached);
+  loadHome();
+});

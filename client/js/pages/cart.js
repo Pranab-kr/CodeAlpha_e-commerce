@@ -7,7 +7,8 @@ import {
   removeItem,
   updateItem,
 } from '../cart.js';
-import { formatMoney, itemCountText } from '../format.js';
+import { formatPrice } from '../currency.js';
+import { itemCountText } from '../format.js';
 import { initLayout } from '../layout.js';
 import {
   clear,
@@ -100,7 +101,7 @@ function cartLine(item, cart) {
     el('span', { className: 'cart-line-category', text: item.category.name }),
     el('span', {
       className: 'cart-line-unit',
-      text: `${formatMoney(item.unitPriceCents, cart.currency)} each`,
+      text: `${formatPrice(item.unitPriceCents, cart.currency)} each`,
     }),
     createControls(item),
   ]);
@@ -135,7 +136,7 @@ function cartLine(item, cart) {
       main,
       el('span', {
         className: 'cart-line-total',
-        text: formatMoney(item.lineTotalCents, cart.currency),
+        text: formatPrice(item.lineTotalCents, cart.currency),
       }),
     ],
   );
@@ -148,9 +149,14 @@ function renderSummary(cart) {
   const shipping = document.querySelector('[data-summary-shipping]');
   const total = document.querySelector('[data-summary-total]');
 
-  subtotal.textContent = formatMoney(cart.subtotalCents, cart.currency);
-  shipping.textContent = formatMoney(cart.shippingCents, cart.currency);
-  total.textContent = formatMoney(cart.totalCents, cart.currency);
+  subtotal.textContent = formatPrice(cart.subtotalCents, cart.currency);
+  shipping.textContent = formatPrice(cart.shippingCents, cart.currency);
+  total.textContent = formatPrice(cart.totalCents, cart.currency);
+
+  const note = document.querySelector('[data-free-shipping-note]');
+  if (note) {
+    note.textContent = `Free shipping at ${formatPrice(10000, 'USD')}. Checkout is a demo; no payment is taken.`;
+  }
 }
 
 function hideEmptyFeatured() {
@@ -284,6 +290,7 @@ async function loadCartPage({ force = false } = {}) {
 clearButton.addEventListener('click', handleClearCart);
 
 window.addEventListener('cart:changed', (event) => renderCart(event.detail.cart));
+window.addEventListener('currency:changed', () => renderCart(getCachedCart()));
 
 initLayout();
 loadCartPage();

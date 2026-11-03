@@ -25,7 +25,7 @@ test('GET /api/products returns twelve seeded products', async () => {
   assert.equal(product.priceCents, 12900);
   assert.equal(product.currency, 'USD');
   assert.equal(product.inStock, true);
-  assert.equal(product.imageUrl, null);
+  assert.equal(product.imageUrl, '/assets/products/arc-75-keyboard.jpg');
   assert.equal(product.category.slug, 'keyboards');
   assert.ok(Array.isArray(product.specs));
   assert.ok(product.specs.length > 0);

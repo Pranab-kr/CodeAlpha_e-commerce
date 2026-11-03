@@ -1,4 +1,5 @@
-import { formatMoney, stockText } from './format.js';
+import { formatPrice } from './currency.js';
+import { stockText } from './format.js';
 
 export function el(tag, options = {}, children = []) {
   const node = document.createElement(tag);
@@ -109,11 +110,8 @@ function glyphField(product, rows) {
   return lines.join('\n');
 }
 
-export function productPlate(product, { size = 'card' } = {}) {
-  const plate = el('div', {
-    className: `plate plate--${size}`,
-    attrs: { 'aria-hidden': 'true' },
-  });
+function renderPlateFallback(plate, product, size) {
+  plate.setAttribute('aria-hidden', 'true');
 
   plate.append(
     el('pre', {
@@ -129,7 +127,38 @@ export function productPlate(product, { size = 'card' } = {}) {
       el('span', { className: 'plate-name', text: product.name }),
     ]),
   );
+}
 
+export function productPlate(product, { size = 'card' } = {}) {
+  const hasPhoto = Boolean(product.imageUrl);
+  const plate = el('div', {
+    className: `plate plate--${size}${hasPhoto ? ' plate--photo' : ''}`,
+  });
+
+  if (hasPhoto) {
+    const image = el('img', {
+      className: 'plate-image',
+      attrs: {
+        src: product.imageUrl,
+        alt: product.name,
+        width: '1200',
+        height: '900',
+        loading: size === 'large' ? 'eager' : 'lazy',
+        decoding: 'async',
+      },
+    });
+
+    image.addEventListener('error', () => {
+      plate.classList.remove('plate--photo');
+      clear(plate);
+      renderPlateFallback(plate, product, size);
+    });
+
+    plate.append(image);
+    return plate;
+  }
+
+  renderPlateFallback(plate, product, size);
   return plate;
 }
 
@@ -142,13 +171,23 @@ export function stockLine(stock) {
 
 export function productCard(product, { onAdd = null, addLabel = 'Add to cart' } = {}) {
   const card = el('article', { className: 'product-card' });
+  const href = `/product.html?slug=${encodeURIComponent(product.slug)}`;
 
-  card.append(productPlate(product, { size: 'card' }));
+  card.append(
+    el(
+      'a',
+      {
+        className: 'card-plate-link',
+        attrs: { href, 'aria-label': `View ${product.name}` },
+      },
+      [productPlate(product, { size: 'card' })],
+    ),
+  );
 
   const title = el('a', {
     className: 'card-name',
     text: product.name,
-    attrs: { href: `/product.html?slug=${encodeURIComponent(product.slug)}` },
+    attrs: { href },
   });
 
   card.append(
@@ -156,7 +195,7 @@ export function productCard(product, { onAdd = null, addLabel = 'Add to cart' } 
       el('span', { className: 'card-category', text: product.category?.name ?? 'Bench Supply' }),
       title,
       el('div', { className: 'card-meta' }, [
-        el('span', { className: 'price', text: formatMoney(product.priceCents, product.currency) }),
+        el('span', { className: 'price', text: formatPrice(product.priceCents, product.currency) }),
         stockLine(product.stock),
       ]),
     ]),
