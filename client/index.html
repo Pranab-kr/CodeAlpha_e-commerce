@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bench Supply: Tools for a working desk.</title>
+    <meta
+      name="description"
+      content="Keyboards, lighting, and small gear for a working desk. A demo store built with Express, Postgres, and Drizzle."
+    />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="module" src="js/pages/home.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header id="site-header"></header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-field-fallback" aria-hidden="true"></div>
+        <canvas class="hero-field" data-hero-field aria-hidden="true"></canvas>
+
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <h1 id="hero-title">Tools for a working desk.</h1>
+            <p class="lead">Keyboards, lighting, and small gear built to last.</p>
+            <div class="hero-actions">
+              <a class="key key--primary" href="/products.html">Shop the catalog</a>
+              <a class="text-link" href="#materials">Read the specs</a>
+            </div>
+          </div>
+
+          <aside class="ledger" aria-labelledby="ledger-title">
+            <div class="ledger-head">
+              <h2 class="ledger-title" id="ledger-title">Current cart</h2>
+              <span class="ledger-count" data-ledger-count>0 items</span>
+            </div>
+            <div class="ledger-body" data-ledger-body>
+              <div class="ledger-empty">
+                <p>Your cart is empty.</p>
+                <button
+                  class="key key--small"
+                  type="button"
+                  data-add-arc
+                  disabled
+                  title="Cart arrives in phase 2"
+                >
+                  Add the Arc 75
+                </button>
+              </div>
+            </div>
+            <p class="ledger-note">Cart totals come from the server, not the page.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section container" aria-labelledby="featured-title">
+        <div class="section-head">
+          <h2 id="featured-title">The short list</h2>
+          <p class="section-line">Four desk tools that carry a workday.</p>
+        </div>
+        <div class="product-grid product-grid--featured" data-featured aria-busy="true"></div>
+      </section>
+
+      <section class="section container" aria-labelledby="categories-title">
+        <div class="section-head">
+          <h2 id="categories-title">Shop by surface</h2>
+          <p class="section-line">Four categories, one working surface.</p>
+        </div>
+        <div class="category-rows" data-categories aria-busy="true"></div>
+      </section>
+
+      <section class="materials" id="materials" aria-labelledby="materials-title">
+        <div class="container">
+          <div class="section-head">
+            <h2 id="materials-title">Built to last</h2>
+            <p class="section-line">Materials chosen for the parts you touch.</p>
+          </div>
+          <div class="materials-grid">
+            <div class="materials-plate" data-materials-plate></div>
+            <div class="materials-panels">
+              <article class="material-panel">
+                <h3>Aluminum where it matters.</h3>
+                <p>
+                  Housings, stands, and light bodies use machined aluminum. The load-bearing parts
+                  stay stiff, and the surface takes a knock without a plastic scar.
+                </p>
+              </article>
+              <article class="material-panel">
+                <h3>PBT, not paint.</h3>
+                <p>
+                  Keycaps are molded PBT with dye-sublimated legends. The texture is the material,
+                  so it does not wear through after a year of typing.
+                </p>
+              </article>
+              <article class="material-panel">
+                <h3>Fasteners, not glue.</h3>
+                <p>
+                  Parts you can open and replace use screws and standard connectors. The battery,
+                  keycaps, and cable are serviceable at a desk.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="delivery-band" id="delivery" aria-labelledby="delivery-title">
+        <div class="container">
+          <h2 id="delivery-title">Delivery and returns</h2>
+          <div class="delivery-facts">
+            <p>Ships in 1-2 business days.</p>
+            <p>30-day returns on unused gear.</p>
+            <p>
+              Support:
+              <a href="mailto:help@benchsupply.example">help@benchsupply.example</a>
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="site-footer"></footer>
+  </body>
+</html>

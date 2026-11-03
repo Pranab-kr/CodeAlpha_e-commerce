@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Local-only design and phase docs. AGENTS.md files stay tracked.
+docs/
+design.md
+
+# Test and tool artifacts
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+*.log
+.DS_Store
