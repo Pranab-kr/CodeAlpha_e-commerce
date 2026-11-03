@@ -1,10 +1,24 @@
+import { apiGet } from '../api.js';
 import { initLayout } from '../layout.js';
-import { productPlate, renderSkeletonCards, renderSkeletonRows } from '../ui.js';
+import {
+  clear,
+  el,
+  productCard,
+  productPlate,
+  renderEmptyState,
+  renderErrorState,
+  renderSkeletonCards,
+  renderSkeletonRows,
+} from '../ui.js';
 
-const HERO_STOCK = [18, 24, 12, 30, 40, 35, 20, 15, 50, 45, 100, 0];
 const GLYPH_RAMP = ' .:-=+*#%@';
+const fieldState = { stocks: [], started: false };
 
-function drawHeroField() {
+function drawHeroField(stocks) {
+  fieldState.stocks = stocks;
+  if (fieldState.started || stocks.length === 0) return;
+  fieldState.started = true;
+
   const canvas = document.querySelector('[data-hero-field]');
   if (!canvas) return;
 
@@ -38,7 +52,8 @@ function drawHeroField() {
 
     for (let row = 0; row < rows; row += 1) {
       for (let column = startColumn; column < columns; column += 1) {
-        const stock = HERO_STOCK[(row * columns + column + frame) % HERO_STOCK.length];
+        const stock =
+          fieldState.stocks[(row * columns + column + frame) % fieldState.stocks.length];
         const wave = Math.sin(column * 0.33 + row * 0.55 + frame * 0.045);
         const intensity = Math.min(1, (stock / 100) * 0.55 + Math.abs(wave) * 0.45);
         if (intensity < 0.12) continue;
@@ -105,31 +120,115 @@ function drawHeroField() {
   start();
 }
 
-function renderShell() {
-  initLayout();
-
+function renderFeatured(products) {
   const featured = document.querySelector('[data-featured]');
-  if (featured) renderSkeletonCards(featured, 4);
+  if (!featured) return;
 
-  const categories = document.querySelector('[data-categories]');
-  if (categories) renderSkeletonRows(categories, 4);
+  featured.setAttribute('aria-busy', 'false');
 
-  const materialsPlate = document.querySelector('[data-materials-plate]');
-  if (materialsPlate) {
-    materialsPlate.append(
-      productPlate(
-        {
-          name: 'Arc 75 Keyboard',
-          slug: 'arc-75-keyboard',
-          stock: 18,
-          category: { name: 'Keyboards' },
-        },
-        { size: 'large' },
-      ),
-    );
+  if (products.length === 0) {
+    renderEmptyState(featured, {
+      title: 'The short list is empty.',
+      message: 'The catalog is being prepared.',
+    });
+    return;
   }
 
-  drawHeroField();
+  clear(featured);
+  for (const product of products) {
+    featured.append(productCard(product, { addLabel: 'Cart arrives in phase 2' }));
+  }
 }
 
-renderShell();
+function categoryRow(category) {
+  return el(
+    'a',
+    {
+      className: 'category-row',
+      attrs: { href: `products.html?category=${encodeURIComponent(category.slug)}` },
+    },
+    [
+      el('h3', { text: category.name }),
+      el('p', { text: category.description }),
+      el('span', {
+        className: 'category-count',
+        text: `${category.productCount} ${category.productCount === 1 ? 'product' : 'products'}`,
+      }),
+    ],
+  );
+}
+
+function renderCategories(categories) {
+  const host = document.querySelector('[data-categories]');
+  if (!host) return;
+
+  host.setAttribute('aria-busy', 'false');
+
+  if (categories.length === 0) {
+    renderEmptyState(host, {
+      title: 'No categories yet.',
+      message: 'The catalog has no categories.',
+    });
+    return;
+  }
+
+  clear(host);
+  for (const category of categories) host.append(categoryRow(category));
+}
+
+function renderMaterialsPlate(product) {
+  const host = document.querySelector('[data-materials-plate]');
+  if (!host) return;
+
+  clear(host);
+  host.append(productPlate(product, { size: 'large' }));
+}
+
+async function loadHome() {
+  const featuredHost = document.querySelector('[data-featured]');
+  const categoryHost = document.querySelector('[data-categories]');
+
+  if (featuredHost) renderSkeletonCards(featuredHost, 4);
+  if (categoryHost) renderSkeletonRows(categoryHost, 4);
+
+  const [productsResult, categoriesResult] = await Promise.allSettled([
+    apiGet('/api/products?sort=featured&limit=48'),
+    apiGet('/api/categories'),
+  ]);
+
+  if (productsResult.status === 'fulfilled') {
+    const products = productsResult.value.data;
+    renderFeatured(products.slice(0, 4));
+    drawHeroField(products.map((product) => product.stock));
+
+    const materialsProduct = products.find((product) => product.slug === 'arc-75-keyboard');
+    if (materialsProduct) renderMaterialsPlate(materialsProduct);
+  } else if (featuredHost) {
+    featuredHost.setAttribute('aria-busy', 'false');
+    renderErrorState(featuredHost, {
+      title: 'The short list did not load.',
+      message: productsResult.reason?.message || 'Try again.',
+      onRetry: loadHome,
+    });
+  }
+
+  if (categoriesResult.status === 'fulfilled') {
+    renderCategories(categoriesResult.value.data);
+  } else if (categoryHost) {
+    categoryHost.setAttribute('aria-busy', 'false');
+    renderErrorState(categoryHost, {
+      title: 'Categories did not load.',
+      message: categoriesResult.reason?.message || 'Try again.',
+      onRetry: loadHome,
+    });
+  }
+}
+
+initLayout();
+renderMaterialsPlate({
+  name: 'Arc 75 Keyboard',
+  slug: 'arc-75-keyboard',
+  stock: 18,
+  category: { name: 'Keyboards' },
+});
+loadHome();

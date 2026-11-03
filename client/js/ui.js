@@ -133,7 +133,7 @@ export function productPlate(product, { size = 'card' } = {}) {
   return plate;
 }
 
-function stockLine(stock) {
+export function stockLine(stock) {
   return el('span', { className: 'stock' }, [
     el('span', { className: 'stock-square', attrs: { 'aria-hidden': 'true' } }),
     el('span', { text: stockText(stock) }),

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Catalog: Bench Supply</title>
+    <meta
+      name="description"
+      content="Search the Bench Supply catalog by category, price, and name. Keyboards, lighting, desk gear, and accessories."
+    />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="module" src="js/pages/products.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header id="site-header"></header>
+
+    <main id="main" class="container">
+      <section class="page-head" aria-labelledby="catalog-title">
+        <h1 id="catalog-title">Catalog</h1>
+        <div class="page-line page-line--split">
+          <span data-result-line aria-live="polite">Loading the catalog.</span>
+          <span class="result-count" data-page-count></span>
+        </div>
+      </section>
+
+      <form class="filter-bar cut" data-filter-form role="search" aria-label="Catalog filters">
+        <div class="field">
+          <label for="search">Search</label>
+          <input
+            id="search"
+            name="search"
+            type="search"
+            placeholder="Keyboard, light, hub"
+            autocomplete="off"
+          />
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sort">Sort</label>
+          <select id="sort" name="sort">
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price_asc">Price: low to high</option>
+            <option value="price_desc">Price: high to low</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+        <button class="key key--small filter-clear" type="button" data-clear-filters>
+          Clear filters
+        </button>
+        <button class="visually-hidden" type="submit">Apply filters</button>
+      </form>
+
+      <div class="product-grid product-grid--catalog" data-products aria-busy="true"></div>
+
+      <nav class="pagination" data-pagination aria-label="Catalog pages" hidden></nav>
+    </main>
+
+    <footer id="site-footer"></footer>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product: Bench Supply</title>
+    <meta
+      name="description"
+      content="Product specifications, stock, and price from the Bench Supply catalog."
+    />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="module" src="js/pages/product.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header id="site-header"></header>
+
+    <main id="main" class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="products.html">Catalog</a></li>
+          <li data-breadcrumb-category></li>
+          <li data-breadcrumb-product></li>
+        </ol>
+      </nav>
+
+      <div data-product-root aria-busy="true">
+        <div class="product-layout">
+          <div class="product-visual">
+            <div class="skeleton-plate" aria-hidden="true"></div>
+          </div>
+          <div class="product-info">
+            <h1 class="visually-hidden">Loading product</h1>
+            <div class="skeleton-line skeleton-line--short" aria-hidden="true"></div>
+            <div class="skeleton-line skeleton-line--medium" aria-hidden="true"></div>
+            <div class="skeleton-line" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div data-product-state hidden></div>
+
+      <section class="related-section" data-related-section aria-labelledby="related-title" hidden>
+        <div class="section-head">
+          <h2 id="related-title">Also on the desk</h2>
+          <p class="section-line">More from the same category.</p>
+        </div>
+        <div class="product-grid product-grid--related" data-related></div>
+      </section>
+    </main>
+
+    <footer id="site-footer"></footer>
+  </body>
+</html>
