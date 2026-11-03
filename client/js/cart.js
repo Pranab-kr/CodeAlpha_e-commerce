@@ -1,4 +1,5 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from './api.js';
+import { whenSessionReady } from './auth.js';
 import { showToast } from './ui.js';
 
 let cart = null;
@@ -9,6 +10,10 @@ function emit() {
 }
 
 export async function loadCart({ force = false } = {}) {
+  if (cart && !force) return cart;
+
+  await whenSessionReady();
+
   if (cart && !force) return cart;
   if (inFlight && !force) return inFlight;
 
@@ -29,6 +34,7 @@ export function getCachedCart() {
 }
 
 export async function addItem(productId, quantity = 1) {
+  await whenSessionReady();
   const payload = await apiPost('/api/cart/items', { productId, quantity });
   cart = payload.data;
   emit();
@@ -36,6 +42,7 @@ export async function addItem(productId, quantity = 1) {
 }
 
 export async function updateItem(productId, quantity) {
+  await whenSessionReady();
   const payload = await apiPatch(`/api/cart/items/${encodeURIComponent(productId)}`, {
     quantity,
   });
@@ -45,6 +52,7 @@ export async function updateItem(productId, quantity) {
 }
 
 export async function removeItem(productId) {
+  await whenSessionReady();
   const payload = await apiDelete(`/api/cart/items/${encodeURIComponent(productId)}`);
   cart = payload.data;
   emit();
@@ -52,6 +60,7 @@ export async function removeItem(productId) {
 }
 
 export async function clearCart() {
+  await whenSessionReady();
   await apiDelete('/api/cart');
   const payload = await apiGet('/api/cart');
   cart = payload.data;

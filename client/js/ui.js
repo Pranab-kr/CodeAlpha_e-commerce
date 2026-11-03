@@ -236,6 +236,47 @@ export function renderEmptyState(container, { title, message, actionLabel, actio
   container.append(panel);
 }
 
+export function clearFormErrors(form) {
+  form.querySelectorAll('[data-error-for]').forEach((error) => {
+    error.hidden = true;
+    error.textContent = '';
+  });
+
+  form.querySelectorAll('[aria-invalid="true"]').forEach((input) => {
+    input.removeAttribute('aria-invalid');
+  });
+
+  const formError = form.querySelector('[data-form-error]');
+  if (formError) {
+    formError.hidden = true;
+    formError.textContent = '';
+  }
+}
+
+export function showFieldError(form, name, message) {
+  const input = form.elements.namedItem(name);
+  const error = form.querySelector(`[data-error-for="${name}"]`);
+
+  if (input instanceof HTMLElement) input.setAttribute('aria-invalid', 'true');
+  if (error) {
+    error.textContent = message;
+    error.hidden = false;
+  }
+}
+
+export function showFormError(form, message) {
+  const formError = form.querySelector('[data-form-error]');
+  if (!formError) return;
+
+  formError.textContent = message;
+  formError.hidden = false;
+}
+
+export function focusFirstInvalid(form) {
+  const invalid = form.querySelector('[aria-invalid="true"]');
+  if (invalid instanceof HTMLElement) invalid.focus();
+}
+
 export function renderErrorState(container, { title, message, onRetry }) {
   clear(container);
   const panel = el('div', { className: 'state-panel cut', attrs: { role: 'alert' } }, [

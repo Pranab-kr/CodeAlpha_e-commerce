@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, sql } from 'drizzle-orm';
-import { env } from '../../config/env.js';
 import { db } from '../../db/client.js';
 import { cartItems, carts, categories, products } from '../../db/schema.js';
 import { AppError, notFound } from '../../lib/errors.js';
 import { readGuestCartToken, setGuestCartToken } from '../../lib/cookies.js';
+import { totalsFor } from '../../lib/money.js';
 
 export function getCartIdentity(req, res) {
   const userId = req.user?.id ?? null;
@@ -82,10 +82,7 @@ export async function getCartDto(cartId) {
 
   const subtotalCents = items.reduce((sum, item) => sum + item.lineTotalCents, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const shippingCents =
-    items.length === 0 || subtotalCents >= env.FREE_SHIPPING_THRESHOLD_CENTS
-      ? 0
-      : env.SHIPPING_FLAT_CENTS;
+  const { shippingCents, totalCents } = totalsFor(subtotalCents);
 
   return {
     id: cartId,
@@ -93,7 +90,7 @@ export async function getCartDto(cartId) {
     itemCount,
     subtotalCents,
     shippingCents,
-    totalCents: subtotalCents + shippingCents,
+    totalCents,
     currency: rows[0]?.currency?.trim() ?? 'USD',
   };
 }
@@ -177,4 +174,66 @@ export async function removeItem(identity, productId) {
 export async function clearCart(identity) {
   const cart = await getOrCreateCart(identity);
   await db.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+}
+
+export async function mergeGuestCart({ userId, guestToken }) {
+  if (!guestToken) return false;
+
+  return db.transaction(async (tx) => {
+    const [guestCart] = await tx
+      .select()
+      .from(carts)
+      .where(eq(carts.guestToken, guestToken))
+      .limit(1);
+    if (!guestCart) return false;
+
+    const [userCart] = await tx
+      .select()
+      .from(carts)
+      .where(and(eq(carts.userId, userId), eq(carts.status, 'active')))
+      .limit(1);
+
+    if (!userCart) {
+      await tx
+        .update(carts)
+        .set({ userId, guestToken: null, updatedAt: new Date() })
+        .where(eq(carts.id, guestCart.id));
+      return true;
+    }
+
+    const guestItems = await tx.select().from(cartItems).where(eq(cartItems.cartId, guestCart.id));
+
+    for (const item of guestItems) {
+      const [product] = await tx
+        .select({ stock: products.stock })
+        .from(products)
+        .where(eq(products.id, item.productId))
+        .limit(1);
+      if (!product || product.stock <= 0) continue;
+
+      const [existing] = await tx
+        .select({ id: cartItems.id, quantity: cartItems.quantity })
+        .from(cartItems)
+        .where(and(eq(cartItems.cartId, userCart.id), eq(cartItems.productId, item.productId)))
+        .limit(1);
+
+      const quantity = Math.min((existing?.quantity ?? 0) + item.quantity, product.stock);
+
+      if (existing) {
+        await tx
+          .update(cartItems)
+          .set({ quantity, updatedAt: new Date() })
+          .where(eq(cartItems.id, existing.id));
+      } else {
+        await tx.insert(cartItems).values({
+          cartId: userCart.id,
+          productId: item.productId,
+          quantity,
+        });
+      }
+    }
+
+    await tx.delete(carts).where(eq(carts.id, guestCart.id));
+    return true;
+  });
 }

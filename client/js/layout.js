@@ -1,3 +1,4 @@
+import { getCurrentUser, markSessionReady, refreshSession } from './auth.js';
 import { loadCart } from './cart.js';
 import { el } from './ui.js';
 
@@ -28,6 +29,12 @@ function cartBadge() {
 const navItems = [
   { label: 'Catalog', href: '/products.html', match: ['/products.html', '/product.html'] },
   { label: 'Cart', href: '/cart.html', match: ['/cart.html'], cart: true },
+  {
+    label: 'Sign in',
+    href: '/login.html',
+    match: ['/login.html', '/register.html', '/account.html'],
+    auth: true,
+  },
 ];
 
 function navLinks() {
@@ -36,13 +43,32 @@ function navLinks() {
       'a',
       {
         className: `nav-link${item.cart ? ' cart-link' : ''}`,
-        attrs: { href: item.href },
+        attrs: {
+          href: item.href,
+          ...(item.auth ? { 'data-auth-link': '' } : {}),
+        },
       },
       item.cart ? [el('span', { text: item.label }), cartBadge()] : item.label,
     );
 
-    if (isActive(item.match)) link.setAttribute('aria-current', 'page');
+    if (!item.auth && isActive(item.match)) link.setAttribute('aria-current', 'page');
     return link;
+  });
+}
+
+function updateAuthLinks(user) {
+  const path = currentPath();
+
+  document.querySelectorAll('[data-auth-link]').forEach((link) => {
+    link.textContent = user ? 'Account' : 'Sign in';
+    link.setAttribute('href', user ? '/account.html' : '/login.html');
+
+    const active = user
+      ? path === '/account.html'
+      : path === '/login.html' || path === '/register.html';
+
+    if (active) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   });
 }
 
@@ -196,13 +222,29 @@ export function initLayout() {
   if (headerHost) renderHeader(headerHost);
   if (footerHost) renderFooter(footerHost);
 
+  updateAuthLinks(getCurrentUser());
+
   window.addEventListener('cart:changed', (event) => {
     updateCartBadge(event.detail?.cart?.itemCount ?? 0);
   });
 
-  loadCart()
+  window.addEventListener('auth:changed', (event) => {
+    updateAuthLinks(event.detail?.user ?? null);
+    loadCart({ force: true })
+      .then((cart) => updateCartBadge(cart.itemCount))
+      .catch(() => {});
+  });
+
+  refreshSession({ announce: false })
+    .then(() => {
+      markSessionReady();
+      updateAuthLinks(getCurrentUser());
+      return loadCart();
+    })
     .then((cart) => updateCartBadge(cart.itemCount))
-    .catch(() => {});
+    .catch(() => {
+      markSessionReady();
+    });
 }
 
 export { updateCartBadge };

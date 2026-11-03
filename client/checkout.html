@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Checkout: Bench Supply</title>
+    <meta
+      name="description"
+      content="Enter a shipping address and place a demo Bench Supply order. No card is collected."
+    />
+    <link rel="stylesheet" href="css/app.css" />
+    <script type="module" src="js/pages/checkout.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header id="site-header"></header>
+
+    <main id="main" class="container">
+      <section class="page-head" aria-labelledby="checkout-title">
+        <h1 id="checkout-title">Checkout</h1>
+        <p class="page-line" data-checkout-line>Loading your cart.</p>
+      </section>
+
+      <div data-checkout-state aria-busy="true">
+        <div class="skeleton-row" aria-hidden="true">
+          <div class="skeleton-line skeleton-line--short"></div>
+          <div class="skeleton-line skeleton-line--medium"></div>
+          <div class="skeleton-line"></div>
+        </div>
+      </div>
+
+      <div class="checkout-layout" data-checkout-content hidden>
+        <div class="checkout-form-column">
+          <form class="checkout-form" data-checkout-form novalidate>
+            <section class="checkout-panel cut" aria-labelledby="shipping-title">
+              <h2 class="checkout-panel-title" id="shipping-title">Shipping</h2>
+
+              <div class="form-stack">
+                <div class="field">
+                  <label for="shipping-name">Full name</label>
+                  <input
+                    id="shipping-name"
+                    name="name"
+                    type="text"
+                    autocomplete="name"
+                    required
+                    aria-describedby="name-error"
+                  />
+                  <p class="field-error" id="name-error" data-error-for="name" hidden></p>
+                </div>
+
+                <div class="field">
+                  <label for="shipping-email">Email</label>
+                  <input
+                    id="shipping-email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                    aria-describedby="email-error"
+                  />
+                  <p class="field-error" id="email-error" data-error-for="email" hidden></p>
+                </div>
+
+                <div class="field">
+                  <label for="shipping-address1">Address line 1</label>
+                  <input
+                    id="shipping-address1"
+                    name="address1"
+                    type="text"
+                    autocomplete="address-line1"
+                    required
+                    aria-describedby="address1-error"
+                  />
+                  <p class="field-error" id="address1-error" data-error-for="address1" hidden></p>
+                </div>
+
+                <div class="field">
+                  <label for="shipping-address2">Address line 2 (optional)</label>
+                  <input
+                    id="shipping-address2"
+                    name="address2"
+                    type="text"
+                    autocomplete="address-line2"
+                    aria-describedby="address2-error"
+                  />
+                  <p class="field-error" id="address2-error" data-error-for="address2" hidden></p>
+                </div>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label for="shipping-city">City</label>
+                    <input
+                      id="shipping-city"
+                      name="city"
+                      type="text"
+                      autocomplete="address-level2"
+                      required
+                      aria-describedby="city-error"
+                    />
+                    <p class="field-error" id="city-error" data-error-for="city" hidden></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="shipping-state">State or region (optional)</label>
+                    <input
+                      id="shipping-state"
+                      name="state"
+                      type="text"
+                      autocomplete="address-level1"
+                      aria-describedby="state-error"
+                    />
+                    <p class="field-error" id="state-error" data-error-for="state" hidden></p>
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label for="shipping-postal">Postal code</label>
+                    <input
+                      id="shipping-postal"
+                      name="postalCode"
+                      type="text"
+                      autocomplete="postal-code"
+                      required
+                      aria-describedby="postalCode-error"
+                    />
+                    <p
+                      class="field-error"
+                      id="postalCode-error"
+                      data-error-for="postalCode"
+                      hidden
+                    ></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="shipping-country">Country</label>
+                    <input
+                      id="shipping-country"
+                      name="country"
+                      type="text"
+                      autocomplete="country-name"
+                      required
+                      aria-describedby="country-error"
+                    />
+                    <p class="field-error" id="country-error" data-error-for="country" hidden></p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-panel">
+                Demo checkout. No card is collected and no payment is processed.
+              </div>
+
+              <p class="form-error" data-form-error role="alert" hidden></p>
+              <div
+                class="form-error checkout-stock-error"
+                data-stock-error
+                role="alert"
+                hidden
+              ></div>
+
+              <button class="key key--primary key--block checkout-submit" type="submit" data-submit>
+                Place order
+              </button>
+            </section>
+          </form>
+        </div>
+
+        <aside class="checkout-summary cut" aria-labelledby="checkout-summary-title">
+          <h2 class="checkout-panel-title" id="checkout-summary-title">Summary</h2>
+          <div class="checkout-items" data-checkout-items></div>
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span data-summary-subtotal>$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span data-summary-shipping>$0.00</span>
+            </div>
+            <div class="summary-row summary-total">
+              <span>Total</span>
+              <span data-summary-total>$0.00</span>
+            </div>
+          </div>
+          <p class="summary-note">
+            Free shipping at $100.00. Prices and totals come from the server.
+          </p>
+        </aside>
+      </div>
+    </main>
+
+    <footer id="site-footer"></footer>
+  </body>
+</html>

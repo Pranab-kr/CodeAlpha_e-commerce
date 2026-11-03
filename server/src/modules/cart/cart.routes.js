@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { optionalAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
   deleteCart,
@@ -10,6 +11,8 @@ import {
 import { addCartItemSchema, cartProductParamsSchema, updateCartItemSchema } from './cart.schema.js';
 
 export const cartRouter = Router();
+
+cartRouter.use(optionalAuth);
 
 cartRouter.get('/', getCart);
 cartRouter.post('/items', validate({ body: addCartItemSchema }), postCartItem);

@@ -8,12 +8,22 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch(path, { method = 'GET', body, headers, signal } = {}) {
+let tokenProvider = () => null;
+let refreshHandler = null;
+
+export function configureAuth({ getToken, refresh }) {
+  if (typeof getToken === 'function') tokenProvider = getToken;
+  if (typeof refresh === 'function') refreshHandler = refresh;
+}
+
+async function request(path, { method = 'GET', body, headers, signal } = {}, retryAuth = true) {
+  const token = tokenProvider();
   const response = await fetch(path, {
     method,
     credentials: 'same-origin',
     headers: {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -24,6 +34,11 @@ export async function apiFetch(path, { method = 'GET', body, headers, signal } =
   let payload = null;
   if (contentType.includes('application/json')) {
     payload = await response.json().catch(() => null);
+  }
+
+  if (response.status === 401 && retryAuth && refreshHandler) {
+    const refreshed = await refreshHandler();
+    if (refreshed) return request(path, { method, body, headers, signal }, false);
   }
 
   if (!response.ok) {
@@ -38,18 +53,26 @@ export async function apiFetch(path, { method = 'GET', body, headers, signal } =
   return payload;
 }
 
+export function apiFetch(path, { method = 'GET', body, headers, signal } = {}) {
+  return request(path, { method, body, headers, signal });
+}
+
 export function apiGet(path, options = {}) {
-  return apiFetch(path, { ...options, method: 'GET' });
+  return request(path, { ...options, method: 'GET' });
 }
 
 export function apiPost(path, body, options = {}) {
-  return apiFetch(path, { ...options, method: 'POST', body });
+  return request(path, { ...options, method: 'POST', body });
 }
 
 export function apiPatch(path, body, options = {}) {
-  return apiFetch(path, { ...options, method: 'PATCH', body });
+  return request(path, { ...options, method: 'PATCH', body });
 }
 
 export function apiDelete(path, options = {}) {
-  return apiFetch(path, { ...options, method: 'DELETE' });
+  return request(path, { ...options, method: 'DELETE' });
+}
+
+export function apiRequestNoAuthRetry(path, options = {}) {
+  return request(path, options, false);
 }
