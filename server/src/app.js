@@ -46,7 +46,7 @@ export function createApp() {
 
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
-  app.use(originCheck);
+  app.use(originCheck());
 
   app.use(
     express.static(clientDir, {

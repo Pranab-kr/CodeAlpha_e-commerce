@@ -11,6 +11,26 @@ export function errorHandler(err, req, res, next) {
     return;
   }
 
+  if (err.type === 'entity.too.large') {
+    res.status(413).json({
+      error: {
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'Request body is too large.',
+      },
+    });
+    return;
+  }
+
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    res.status(400).json({
+      error: {
+        code: 'INVALID_JSON',
+        message: 'Request body must be valid JSON.',
+      },
+    });
+    return;
+  }
+
   if (err instanceof ZodError) {
     const details = err.issues.map((issue) => ({
       path: issue.path.join('.'),
