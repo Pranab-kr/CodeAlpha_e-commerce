@@ -1,4 +1,5 @@
 import { apiGet } from '../api.js';
+import { addFromButton } from '../cart.js';
 import { initLayout } from '../layout.js';
 import {
   clear,
@@ -145,7 +146,7 @@ function renderProducts({ data, meta }) {
   }
 
   for (const product of data) {
-    grid.append(productCard(product, { addLabel: 'Cart arrives in phase 2' }));
+    grid.append(productCard(product, { onAdd: addFromButton }));
   }
 
   const categoryName = categorySelect.selectedOptions[0]?.textContent ?? '';

@@ -1,4 +1,5 @@
 import { ApiError, apiGet } from '../api.js';
+import { addFromButton } from '../cart.js';
 import { formatMoney } from '../format.js';
 import { initLayout } from '../layout.js';
 import { clear, el, productCard, productPlate, renderErrorState, stockLine } from '../ui.js';
@@ -68,7 +69,10 @@ function createStepper(max) {
   input.addEventListener('change', clamp);
   clamp();
 
-  return { wrapper };
+  return {
+    wrapper,
+    getQuantity: () => Math.min(Math.max(readValue(), 1), Math.max(1, max)),
+  };
 }
 
 function specsTable(specs) {
@@ -111,13 +115,18 @@ function renderProduct(product) {
 
   const addButton = el('button', {
     className: 'key key--primary',
-    text: product.stock <= 0 ? 'Out of stock' : 'Cart arrives in phase 2',
+    text: product.stock <= 0 ? 'Out of stock' : 'Add to cart',
     attrs: {
       type: 'button',
-      disabled: true,
-      title: 'Cart arrives in phase 2',
+      ...(product.stock <= 0 ? { disabled: true } : {}),
     },
   });
+
+  if (product.stock > 0) {
+    addButton.addEventListener('click', () =>
+      addFromButton(product, addButton, stepper.getQuantity()),
+    );
+  }
 
   const info = el('div', { className: 'product-info' }, [
     el('span', { className: 'product-category', text: product.category.name }),
@@ -142,7 +151,7 @@ function renderProduct(product) {
   if (product.related.length > 0) {
     clear(relatedGrid);
     for (const related of product.related) {
-      relatedGrid.append(productCard(related, { addLabel: 'Cart arrives in phase 2' }));
+      relatedGrid.append(productCard(related, { onAdd: addFromButton }));
     }
     relatedSection.hidden = false;
   } else {

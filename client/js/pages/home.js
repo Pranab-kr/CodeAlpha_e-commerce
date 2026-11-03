@@ -1,4 +1,6 @@
 import { apiGet } from '../api.js';
+import { addFromButton, getCachedCart, loadCart } from '../cart.js';
+import { formatMoney, itemCountText } from '../format.js';
 import { initLayout } from '../layout.js';
 import {
   clear,
@@ -136,7 +138,7 @@ function renderFeatured(products) {
 
   clear(featured);
   for (const product of products) {
-    featured.append(productCard(product, { addLabel: 'Cart arrives in phase 2' }));
+    featured.append(productCard(product, { onAdd: addFromButton }));
   }
 }
 
@@ -184,6 +186,104 @@ function renderMaterialsPlate(product) {
   host.append(productPlate(product, { size: 'large' }));
 }
 
+let arcProduct = null;
+
+function ledgerLine(item, currency) {
+  return el('div', { className: 'ledger-line' }, [
+    el('a', {
+      className: 'ledger-line-name',
+      text: item.name,
+      attrs: { href: `product.html?slug=${encodeURIComponent(item.slug)}` },
+    }),
+    el('span', { className: 'ledger-line-qty', text: `x${item.quantity}` }),
+    el('span', {
+      className: 'ledger-line-total',
+      text: formatMoney(item.lineTotalCents, currency),
+    }),
+  ]);
+}
+
+function renderLedger(cart) {
+  const body = document.querySelector('[data-ledger-body]');
+  const count = document.querySelector('[data-ledger-count]');
+  if (!body) return;
+
+  count.textContent = itemCountText(cart.itemCount);
+  clear(body);
+
+  if (cart.items.length === 0) {
+    const empty = el('div', { className: 'ledger-empty' }, [
+      el('p', { text: 'Your cart is empty.' }),
+    ]);
+
+    if (arcProduct) {
+      const button = el('button', {
+        className: 'key key--small',
+        text: 'Add the Arc 75',
+        attrs: { type: 'button' },
+      });
+      button.addEventListener('click', () => addFromButton(arcProduct, button));
+      empty.append(button);
+    }
+
+    body.append(empty);
+    return;
+  }
+
+  for (const item of cart.items) body.append(ledgerLine(item, cart.currency));
+
+  body.append(
+    el('div', { className: 'ledger-total' }, [
+      el('span', { text: 'Subtotal' }),
+      el('span', { className: 'price', text: formatMoney(cart.subtotalCents, cart.currency) }),
+    ]),
+    el('div', { className: 'ledger-actions' }, [
+      el('a', { className: 'key key--small', text: 'View cart', attrs: { href: 'cart.html' } }),
+    ]),
+  );
+}
+
+function renderLedgerLoading() {
+  const body = document.querySelector('[data-ledger-body]');
+  const count = document.querySelector('[data-ledger-count]');
+  if (!body) return;
+
+  if (count) count.textContent = 'Loading';
+  clear(body);
+  body.append(el('div', { className: 'ledger-empty' }, [el('p', { text: 'Loading cart.' })]));
+}
+
+function renderLedgerError() {
+  const body = document.querySelector('[data-ledger-body]');
+  const count = document.querySelector('[data-ledger-count]');
+  if (!body) return;
+
+  if (count) count.textContent = '0 items';
+  clear(body);
+
+  const retry = el('button', {
+    className: 'key key--small',
+    text: 'Try again',
+    attrs: { type: 'button' },
+  });
+  retry.addEventListener('click', () => {
+    renderLedgerLoading();
+    loadCart({ force: true }).then(renderLedger).catch(renderLedgerError);
+  });
+
+  body.append(
+    el('div', { className: 'ledger-empty' }, [el('p', { text: 'The cart did not load.' }), retry]),
+  );
+}
+
+function initLedger() {
+  if (!document.querySelector('[data-ledger-body]')) return;
+
+  renderLedgerLoading();
+  window.addEventListener('cart:changed', (event) => renderLedger(event.detail.cart));
+  loadCart().then(renderLedger).catch(renderLedgerError);
+}
+
 async function loadHome() {
   const featuredHost = document.querySelector('[data-featured]');
   const categoryHost = document.querySelector('[data-categories]');
@@ -201,8 +301,11 @@ async function loadHome() {
     renderFeatured(products.slice(0, 4));
     drawHeroField(products.map((product) => product.stock));
 
-    const materialsProduct = products.find((product) => product.slug === 'arc-75-keyboard');
-    if (materialsProduct) renderMaterialsPlate(materialsProduct);
+    arcProduct = products.find((product) => product.slug === 'arc-75-keyboard') ?? null;
+    if (arcProduct) renderMaterialsPlate(arcProduct);
+
+    const cached = getCachedCart();
+    if (cached) renderLedger(cached);
   } else if (featuredHost) {
     featuredHost.setAttribute('aria-busy', 'false');
     renderErrorState(featuredHost, {
@@ -231,4 +334,5 @@ renderMaterialsPlate({
   stock: 18,
   category: { name: 'Keyboards' },
 });
+initLedger();
 loadHome();

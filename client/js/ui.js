@@ -208,14 +208,22 @@ export function renderSkeletonRows(container, count = 4) {
   }
 }
 
-export function renderEmptyState(container, { title, message, actionLabel, onAction }) {
+export function renderEmptyState(container, { title, message, actionLabel, actionHref, onAction }) {
   clear(container);
   const panel = el('div', { className: 'state-panel cut' }, [
     el('h2', { className: 'state-title', text: title }),
     el('p', { className: 'state-message', text: message }),
   ]);
 
-  if (actionLabel && onAction) {
+  if (actionLabel && typeof actionHref === 'string') {
+    panel.append(
+      el('a', {
+        className: 'key key--small state-action',
+        text: actionLabel,
+        attrs: { href: actionHref },
+      }),
+    );
+  } else if (actionLabel && onAction) {
     const button = el('button', {
       className: 'key key--small state-action',
       text: actionLabel,

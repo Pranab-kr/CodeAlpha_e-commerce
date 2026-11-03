@@ -1,3 +1,4 @@
+import { loadCart } from './cart.js';
 import { el } from './ui.js';
 
 function currentPath() {
@@ -198,6 +199,10 @@ export function initLayout() {
   window.addEventListener('cart:changed', (event) => {
     updateCartBadge(event.detail?.cart?.itemCount ?? 0);
   });
+
+  loadCart()
+    .then((cart) => updateCartBadge(cart.itemCount))
+    .catch(() => {});
 }
 
 export { updateCartBadge };
